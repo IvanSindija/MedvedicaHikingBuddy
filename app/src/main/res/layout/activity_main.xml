@@ -9,13 +9,6 @@
     android:id="@+id/Main">
 
 
-    <Button
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/Statistic"
-        android:id="@+id/statistic"
-        android:textAlignment="center" />
-
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -24,9 +17,4 @@
         android:layout_weight="1"
         android:headerDividersEnabled="false" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="New Button"
-        android:id="@+id/button2" />
 </LinearLayout>

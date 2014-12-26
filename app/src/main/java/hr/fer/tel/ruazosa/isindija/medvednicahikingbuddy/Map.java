@@ -1,10 +1,13 @@
 package hr.fer.tel.ruazosa.isindija.medvednicahikingbuddy;
 
+import android.content.Intent;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -22,6 +25,14 @@ public class Map extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
         setUpMapIfNeeded();
+        Button button = (Button) findViewById(R.id.statistic);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Intent i = new Intent(Map.this, Statistics.class);
+                startActivity(i);
+            }
+        });
         //positionTracking(); has an error with a thread
     }
 

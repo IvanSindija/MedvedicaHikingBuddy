@@ -22,14 +22,6 @@ public class Main extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button button= (Button) findViewById(R.id.statistic);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                final Intent i = new Intent(Main.this, Statistics.class);
-                startActivity(i);
-            }
-        });
 
         final ListView lv = (ListView) findViewById(R.id.tracks);
         final Adapter adapter = new Adapter(this);
