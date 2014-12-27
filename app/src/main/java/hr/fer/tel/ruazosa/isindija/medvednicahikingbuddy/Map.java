@@ -6,6 +6,8 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.text.format.Time;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -19,6 +21,7 @@ public class Map extends FragmentActivity {
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private GPS gps;
     private final double MAXDISTANCE = 50;//max distance from a track 50m
+    Thread mythread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +36,13 @@ public class Map extends FragmentActivity {
                 startActivity(i);
             }
         });
-        //positionTracking(); has an error with a thread
+        positionTracking(); //tracks a position and puts them in a database also calculates distance of a person from a path
+     }
+    @Override
+    public void onBackPressed(){
+        mythread.interrupt();
+        gps.stopUsingGPS();
+        super.onBackPressed();
     }
 
     @Override
@@ -79,38 +88,41 @@ public class Map extends FragmentActivity {
     private void positionTracking(){
         Runnable  runnable = new Runnable() {
             public void run() {
+                Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
                 while (true) {
-                    gps = new GPS(Map.this);
-                    if(gps.canGetLocation()){
+                    try {
+                        gps = new GPS(Map.this);
+                        if (gps.canGetLocation()) {
 
-                        double latitude = gps.getLatitude();
-                        double longitude = gps.getLongitude();
-                        if(TooFar()) {
-                            try {
-                                Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-                                Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
-                                r.play();
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                            double latitude = gps.getLatitude();
+                            double longitude = gps.getLongitude();
+                            long currentTime = System.currentTimeMillis();
+                            if (TooFar()) {
+                                try {
+                                    r.play();
+                                    mythread.sleep(1000);//1sec to play
+                                    r.stop();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
                             }
+                            //TODO Add position and time to database
+                            //TODO calculate a distance from path
+                                Thread.sleep(10000);//10 sec
+                        } else {
+                            // GPS or Network is not enabled
+                            // Ask user to enable GPS/network in settings
+                            gps.showSettingsAlert();
                         }
-                        //TODO Add position and time to database
-                        //TODO calculate a distance from path
-                        //TODO fix thread end
-                        try {
-                            Thread.sleep(10000);//10 sec
-                        }catch (InterruptedException ex){
-                            ex.printStackTrace();
-                        }
-                    }else{
-                        // GPS or Network is not enabled
-                        // Ask user to enable GPS/network in settings
-                        gps.showSettingsAlert();
+                    }catch (InterruptedException ex){
+                        break;
                     }
                 }
+
             }
         };
-        Thread mythread = new Thread(runnable);
+        mythread = new Thread(runnable);
         mythread.start();
     }
     //method will calculate weather a person is on a track
