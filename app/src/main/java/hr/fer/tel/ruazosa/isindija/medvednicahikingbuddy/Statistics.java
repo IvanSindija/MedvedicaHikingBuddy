@@ -4,6 +4,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 
 public class Statistics extends ActionBarActivity {
@@ -12,6 +13,14 @@ public class Statistics extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_statistics);
+        TextView textDis = (TextView)findViewById(R.id.avgDis);
+        TextView textSpeed = (TextView)findViewById(R.id.avgSpeed);
+        Bundle b = getIntent().getExtras();
+        double distance = b.getDouble("Distance");
+        Bundle c = getIntent().getExtras();
+        double speed = c.getDouble("Speed");
+        textDis.setText(((Double) distance).toString());
+        textSpeed.setText(((Double) speed).toString());
     }
 
 

@@ -6,15 +6,16 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
-import android.text.format.Time;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import java.lang.Math;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.util.List;
 
 public class Map extends FragmentActivity {
 
@@ -22,22 +23,53 @@ public class Map extends FragmentActivity {
     private GPS gps;
     private final double MAXDISTANCE = 50;//max distance from a track 50m
     Thread mythread;
-
+    Sql positionDatabase;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
+        positionDatabase = new Sql(this);
         setUpMapIfNeeded();
         Button button = (Button) findViewById(R.id.statistic);
+        /**
+         * gets locations from database calculates avrg distance and speed
+         */
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                List<Location> list = positionDatabase.getAllLocations();
+                double avgSpeed=0;
+                double avgDistance =0;
+                double TotalDistance=0;
+                double TotalTime =0;
+                for(int i=0;i<list.size()-1;i++){
+                    Location x1 = list.get(i);
+                    Location x2 = list.get(i+1);
+                    TotalDistance += gps.distance(x1,x2);
+                    TotalTime += calculateTime(x1,x2);
+                }
+                avgDistance=TotalDistance/list.size();
+                avgSpeed = TotalDistance/TotalTime;
+
                 final Intent i = new Intent(Map.this, Statistics.class);
+                Bundle b = new Bundle();
+                b.putDouble("Distance", avgDistance);
+                i.putExtras(b);
+                Bundle c = new Bundle();
+                c.putDouble("Speed", avgSpeed);
+                i.putExtras(c);
                 startActivity(i);
             }
         });
         positionTracking(); //tracks a position and puts them in a database also calculates distance of a person from a path
      }
+
+    private double calculateTime(Location x1, Location x2) {
+            float t1=x1.getTime();
+            float t2 = x2.getTime();
+       return t2-t1;
+    }
+
     @Override
     public void onBackPressed(){
         mythread.interrupt();
@@ -94,10 +126,8 @@ public class Map extends FragmentActivity {
                     try {
                         gps = new GPS(Map.this);
                         if (gps.canGetLocation()) {
-
-                            double latitude = gps.getLatitude();
-                            double longitude = gps.getLongitude();
-                            long currentTime = System.currentTimeMillis();
+                            Location myLocation = new Location(System.currentTimeMillis(), gps.getLongitude(), gps.getLatitude());
+                            positionDatabase.addLocations(myLocation);
                             if (TooFar()) {
                                 try {
                                     r.play();
@@ -107,7 +137,7 @@ public class Map extends FragmentActivity {
                                     e.printStackTrace();
                                 }
                             }
-                            //TODO Add position and time to database
+
                             //TODO calculate a distance from path
                                 Thread.sleep(10000);//10 sec
                         } else {

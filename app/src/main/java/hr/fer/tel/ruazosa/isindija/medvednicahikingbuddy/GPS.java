@@ -139,6 +139,14 @@ public class GPS extends Service implements LocationListener {
         // return longitude
         return longitude;
     }
+    /*
+    calculates distance between two coordinates in meters
+     */
+    public float distance(hr.fer.tel.ruazosa.isindija.medvednicahikingbuddy.Location x1 , hr.fer.tel.ruazosa.isindija.medvednicahikingbuddy.Location x2){
+        float [] dis = new float[1];
+        location.distanceBetween(x1.getLatitude(),x1.getLongitude(),x2.getLatitude(),x2.getLongitude(),dis);
+        return dis[0];
+    }
 
     /**
      * Function to check GPS/wifi enabled

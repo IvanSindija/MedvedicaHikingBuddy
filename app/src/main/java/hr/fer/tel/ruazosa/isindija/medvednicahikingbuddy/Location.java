@@ -44,7 +44,6 @@ public class Location {
           this.latitude=latitude;
     }
 
-    //getters & setters
 
     @Override
     public String toString() {

@@ -37,26 +37,26 @@ public class Sql extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         // SQL statement to create book table
-        String CREATE_BOOK_TABLE = "CREATE TABLE locations ( " +
+        String CREATE_LOCATION_TABLE = "CREATE TABLE locations ( " +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 "time TIME, "+
                 "longitude DOUBLE, " +
                 "latitude DOUBLE)";
 
-        // create books table
-        db.execSQL(CREATE_BOOK_TABLE);
+        // create Locations table
+        db.execSQL(CREATE_LOCATION_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Drop older books table if existed
+        // Drop older Locations table if existed
         db.execSQL("DROP TABLE IF EXISTS locations");
 
-        // create fresh books table
+        // create fresh Locations table
         this.onCreate(db);
     }
 
-    public void addBook(Location location){
+    public void addLocations(Location location){
 
         // 1. get reference to writable DB
         SQLiteDatabase db = this.getWritableDatabase();
@@ -74,7 +74,7 @@ public class Sql extends SQLiteOpenHelper {
         // 4. close
         db.close();
     }
-    public List<Location> getAllBooks() {
+    public List<Location> getAllLocations() {
         List<Location> locations = new LinkedList<Location>();
 
         // 1. build the query

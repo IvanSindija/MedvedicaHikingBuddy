@@ -8,5 +8,7 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_statistics">Statistics</string>
     <string name="Statistic">Statistic</string>
+    <string name="avgSpeed">Average Speed</string>
+    <string name="avgDistance">Average Distance</string>
 
 </resources>
