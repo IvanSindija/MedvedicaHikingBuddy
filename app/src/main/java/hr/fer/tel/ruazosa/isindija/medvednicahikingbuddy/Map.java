@@ -129,13 +129,9 @@ public class Map extends FragmentActivity {
                             Location myLocation = new Location(System.currentTimeMillis(), gps.getLongitude(), gps.getLatitude());
                             positionDatabase.addLocations(myLocation);
                             if (TooFar()) {
-                                try {
                                     r.play();
                                     mythread.sleep(1000);//1sec to play
                                     r.stop();
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
                             }
 
                             //TODO calculate a distance from path
