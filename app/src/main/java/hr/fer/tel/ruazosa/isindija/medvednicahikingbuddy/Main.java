@@ -35,7 +35,9 @@ public class Main extends ActionBarActivity {
                                     int position, long id) {
                 String TrackName =adapter.getItem(position);
                 final Intent i = new Intent(Main.this, Map.class);
-                i.putExtra(EXTRA_MESSAGE, TrackName);
+                //Bundle b = new Bundle();
+                //b.putString("path", TrackName);
+               // i.putExtras(b);
                 startActivity(i);
             }
         });

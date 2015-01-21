@@ -19,8 +19,8 @@ public class Statistics extends ActionBarActivity {
         double distance = b.getDouble("Distance");
         Bundle c = getIntent().getExtras();
         double speed = c.getDouble("Speed");
-        textDis.setText(((Double) distance).toString());
-        textSpeed.setText(((Double) speed).toString());
+        textDis.setText("Prosjecna uadljenost je "+((Double) distance).toString());
+        textSpeed.setText("Prosjecan brzina je "+((Double) speed).toString());
     }
 
 

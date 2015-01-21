@@ -1,27 +1,39 @@
 package hr.fer.tel.ruazosa.isindija.medvednicahikingbuddy;
 
 import android.content.Intent;
+import android.location.LocationManager;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Looper;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.Math;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.List;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
 
 public class Map extends FragmentActivity {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private GPS gps;
-    private final double MAXDISTANCE = 50;//max distance from a track 50m
     Thread mythread;
     Sql positionDatabase;
     @Override
@@ -31,6 +43,11 @@ public class Map extends FragmentActivity {
         positionDatabase = new Sql(this);
         setUpMapIfNeeded();
         Button button = (Button) findViewById(R.id.statistic);
+        /**
+         * main sends him a list of locations of the hiking  track
+         */
+        Bundle b = getIntent().getExtras();
+        List<Location> path = (List) b.get("path");
         /**
          * gets locations from database calculates avrg distance and speed
          */
@@ -45,8 +62,10 @@ public class Map extends FragmentActivity {
                 for(int i=0;i<list.size()-1;i++){
                     Location x1 = list.get(i);
                     Location x2 = list.get(i+1);
-                    TotalDistance += gps.distance(x1,x2);
-                    TotalTime += calculateTime(x1,x2);
+                    if(x2.getTime()-x1.getTime()<20000) {//if time between two loc is bigger then 20sec that means that ap was turned off
+                        TotalDistance += gps.distance(x1, x2);
+                        TotalTime += calculateTime(x1, x2);
+                    }
                 }
                 avgDistance=TotalDistance/list.size();
                 avgSpeed = TotalDistance/TotalTime;
@@ -61,7 +80,7 @@ public class Map extends FragmentActivity {
                 startActivity(i);
             }
         });
-        positionTracking(); //tracks a position and puts them in a database also calculates distance of a person from a path
+        positionTracking(path); //tracks a position and puts them in a database also calculates distance of a person from a path
      }
 
     private double calculateTime(Location x1, Location x2) {
@@ -81,7 +100,6 @@ public class Map extends FragmentActivity {
     protected void onResume() {
         super.onResume();
         setUpMapIfNeeded();
-        //positionTracking();
     }
 
     /**
@@ -112,29 +130,24 @@ public class Map extends FragmentActivity {
         }
     }
 
-    /**
-     * This is where we can add markers or lines, add listeners or move the camera. In this case, we
-     * <p/>
-     * This should only be called once and when we are sure that {@link #mMap} is not null.
-     */
-    private void positionTracking(){
+    private void positionTracking(final List <Location> path){
         Runnable  runnable = new Runnable() {
             public void run() {
                 Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                 Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+                gps = new GPS(Map.this);
+                KdTree kdTree = new KdTree(path);
                 while (true) {
                     try {
-                        gps = new GPS(Map.this);
                         if (gps.canGetLocation()) {
-                            Location myLocation = new Location(System.currentTimeMillis(), gps.getLongitude(), gps.getLatitude());
+                            Location myLocation = new Location(System.currentTimeMillis(), gps.getLongitude(),gps.getLatitude());
                             positionDatabase.addLocations(myLocation);
-                            if (TooFar()) {
+                            if (true/*kdTree.nearestNeighbourSearch(new KdTree.xyPoint(myLocation.getLongitude(),myLocation.getLatitude()))*/) {
                                     r.play();
                                     mythread.sleep(1000);//1sec to play
                                     r.stop();
                             }
 
-                            //TODO calculate a distance from path
                                 Thread.sleep(10000);//10 sec
                         } else {
                             // GPS or Network is not enabled
@@ -142,6 +155,8 @@ public class Map extends FragmentActivity {
                             gps.showSettingsAlert();
                         }
                     }catch (InterruptedException ex){
+                        if(r.isPlaying())
+                            r.stop();
                         break;
                     }
                 }
@@ -152,12 +167,17 @@ public class Map extends FragmentActivity {
         mythread.start();
     }
     //method will calculate weather a person is on a track
-    private boolean TooFar() {
-        return true;
-    }
 
-
+    /**
+     * This is where we can add markers or lines, add listeners or move the camera. In this case, we
+     * <p/>
+     * This should only be called once and when we are sure that {@link #mMap} is not null.
+     */
     private void setUpMap() {
         mMap.setMyLocationEnabled(true);
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                new LatLng(45.913810, 15.963367), 13));
+        mMap.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+
     }
 }
