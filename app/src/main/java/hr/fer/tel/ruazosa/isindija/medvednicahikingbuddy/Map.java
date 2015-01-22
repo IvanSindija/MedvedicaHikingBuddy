@@ -26,6 +26,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
@@ -47,7 +48,9 @@ public class Map extends FragmentActivity {
          * main sends him a list of locations of the hiking  track
          */
         Bundle b = getIntent().getExtras();
-        List<Location> path = (List) b.get("path");
+        String path = (String) b.get("path");
+        Log.d("Path: ", path);
+        //List<Location> path = (List)b.get("path");
         /**
          * gets locations from database calculates avrg distance and speed
          */
@@ -81,12 +84,12 @@ public class Map extends FragmentActivity {
             }
         });
         positionTracking(path); //tracks a position and puts them in a database also calculates distance of a person from a path
-     }
+    }
 
     private double calculateTime(Location x1, Location x2) {
-            float t1=x1.getTime();
-            float t2 = x2.getTime();
-       return t2-t1;
+        float t1=x1.getTime();
+        float t2 = x2.getTime();
+        return t2-t1;
     }
 
     @Override
@@ -130,11 +133,30 @@ public class Map extends FragmentActivity {
         }
     }
 
-    private void positionTracking(final List <Location> path){
+    private void positionTracking(final String paths){
         Runnable  runnable = new Runnable() {
             public void run() {
                 Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                 Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+                /**/
+                String[] parts = paths.split(",0");
+                //Log.d("MAIN: ", parts[1]);
+                for(int i = 0; i < parts.length; i++) {
+                    parts[i] = parts[i].replace(" ", "");
+                }
+                Log.d("Parts: ", parts[3]);
+                //Log.d("MAIN: ", parts[1]);
+                /**/
+                List<KdTree.xyPoint> path = new LinkedList<KdTree.xyPoint>(); // {"X,Y", "X,Y", ... }
+                for(int i = 0; i < parts.length-1; i++) {
+                    String[] latLong = parts[i].split(",");
+                    double latitude = Double.parseDouble(latLong[0]);
+                    Log.d("LatD: ", ((Double)latitude).toString());
+                    Log.d("LonD: ", latLong[1]);
+                    double longitude = Double.parseDouble(latLong[1]);
+                    KdTree.xyPoint temp = new KdTree.xyPoint(longitude, latitude);
+                    path.add(temp);
+                }
                 gps = new GPS(Map.this);
                 KdTree kdTree = new KdTree(path);
                 while (true) {
@@ -142,13 +164,13 @@ public class Map extends FragmentActivity {
                         if (gps.canGetLocation()) {
                             Location myLocation = new Location(System.currentTimeMillis(), gps.getLongitude(),gps.getLatitude());
                             positionDatabase.addLocations(myLocation);
-                            if (true/*kdTree.nearestNeighbourSearch(new KdTree.xyPoint(myLocation.getLongitude(),myLocation.getLatitude()))*/) {
-                                    r.play();
-                                    mythread.sleep(1000);//1sec to play
-                                    r.stop();
+                            if (!kdTree.nearestNeighbourSearch(new KdTree.xyPoint(myLocation.getLongitude(),myLocation.getLatitude()))) {
+                                r.play();
+                                mythread.sleep(1000);//1sec to play
+                                r.stop();
                             }
 
-                                Thread.sleep(10000);//10 sec
+                            Thread.sleep(10000);//10 sec
                         } else {
                             // GPS or Network is not enabled
                             // Ask user to enable GPS/network in settings
