@@ -21,7 +21,6 @@ public class Adapter extends BaseAdapter {
 
     private static class ViewHolder {
         public TextView title;
-        public TextView subtitle;
     }
 
     public Adapter(final Context context) {
@@ -51,11 +50,9 @@ public class Adapter extends BaseAdapter {
             convertView = inflater.inflate(android.R.layout.simple_list_item_2, null, false);
 
             final TextView title = (TextView) convertView.findViewById(android.R.id.text1);
-            final TextView subtitle = (TextView) convertView.findViewById(android.R.id.text2);
 
             final ViewHolder vh = new ViewHolder();
             vh.title = title;
-            vh.subtitle = subtitle;
 
             convertView.setTag(vh);
         }
@@ -63,7 +60,6 @@ public class Adapter extends BaseAdapter {
         final ViewHolder vh = (ViewHolder) convertView.getTag();
 
         final TextView title = vh.title;
-        final TextView subtitle = vh.subtitle;
 
         final String item = getItem(position);
 
@@ -75,7 +71,7 @@ public class Adapter extends BaseAdapter {
 
         title.setText(item);
 
-        subtitle.setText("Staza " + position);
+        title.setText("Staza " + position);
 
         return convertView;
     }
